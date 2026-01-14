@@ -1,14 +1,25 @@
+import classNames from 'classnames';
+import { Link } from 'react-router-dom';
 import { Person } from '../types';
 
 type Props = {
   person: Person;
+  isSelected?: boolean;
 };
 
-export const PersonLink = ({ person }: Props) => {
+export const PersonLink = ({ person, isSelected }: Props) => {
   return (
-    <tr data-cy="person">
+    <tr
+      data-cy="person"
+      className={classNames({ 'has-background-warning': isSelected })}
+    >
       <td>
-        <a href="#/people/jan-van-brussel-1714">{person.name}</a>
+        <Link
+          className={classNames({ 'has-text-danger': person.sex === 'f' })}
+          to={`/people/${person.slug}`}
+        >
+          {person.name}
+        </Link>
       </td>
 
       <td>{person.sex}</td>
@@ -16,20 +27,31 @@ export const PersonLink = ({ person }: Props) => {
       <td>{person.died}</td>
 
       <td>
-        {person.mother ? (
-          <a className="has-text-danger" href="#/people/emma-de-milliano-1876">
-            {/* {person.mother} */}
-          </a>
+        {person.motherName ? (
+          person.mother ? (
+            <Link
+              className="has-text-danger"
+              to={`/people/${person.mother.slug}`}
+            >
+              {`${person.mother.name}`}
+            </Link>
+          ) : (
+            person.motherName
+          )
         ) : (
           '-'
         )}
       </td>
 
       <td>
-        {person.father ? (
-          <a href="#/people/emma-de-milliano-1876">
-            {/* {person.father} */}
-          </a>
+        {person.fatherName ? (
+          person.father ? (
+            <Link to={`/people/${person.father.slug}`}>
+              {`${person.father.name}`}
+            </Link>
+          ) : (
+            person.fatherName
+          )
         ) : (
           '-'
         )}

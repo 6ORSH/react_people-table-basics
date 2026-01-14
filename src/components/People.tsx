@@ -1,50 +1,48 @@
-import { useEffect, useState } from 'react';
-import { Loader } from './Loader';
+import { useCallback, useEffect, useState } from 'react';
+import { getPeople } from '../api';
 import { Person } from '../types';
+import { Loader } from './Loader';
 import { PeopleTable } from './PeopleTable';
 
 export const PeoplePage = () => {
   const [people, setPeople] = useState<Person[]>([]);
+  const [isGetPeopleError, setIsGetPeopleError] = useState<boolean>(false);
+  const [isLoading, setLoading] = useState<boolean>(false);
 
-  async function getPople() {
+  const loadPeople = useCallback(async () => {
     try {
-      const res = await fetch(
-        'https://mate-academy.github.io/react_people-table/api/people.json)',
-      );
+      setLoading(true);
+      const peopleFromServer = await getPeople();
 
-      if (!res.ok) {
-        throw new Error('HTTP error ' + res.status);
-      }
-
-      const peopleData = await res.json();
-      console.log(peopleData);
-      return peopleData;
+      setPeople(peopleFromServer);
     } catch (error) {
-      console.error('Fetch failed:', error);
+      setIsGetPeopleError(true);
+    } finally {
+      setLoading(false);
     }
-  }
+  }, []);
 
   useEffect(() => {
-    getPople().then((peopleFromServer: Person[]) => {
-      setPeople(peopleFromServer);
-    });
-  }, []);
+    loadPeople();
+  }, [loadPeople]);
 
   return (
     <>
-      <h1 className="title">People page</h1>
+      <h1 className="title">People Page</h1>
 
       <div className="block">
         <div className="box table-container">
-          <Loader />
-
-          <p data-cy="peopleLoadingError" className="has-text-danger">
-            Something went wrong
-          </p>
-
-          <p data-cy="noPeopleMessage">There are no people on the server</p>
-
-          <PeopleTable people={people} />
+          {isLoading ? (
+            <Loader />
+          ) : isGetPeopleError ? (
+            <p data-cy="peopleLoadingError" className="has-text-danger">
+              Something went wrong
+            </p>
+          ) : people?.length > 0 ? (
+            <PeopleTable people={people} />
+          ) : (
+            <p data-cy="noPeopleMessage">There are no people on the server</p>
+          )}
         </div>
       </div>
     </>

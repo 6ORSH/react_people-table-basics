@@ -1,3 +1,4 @@
+import { useParams } from 'react-router-dom';
 import { Person } from '../types';
 import { PersonLink } from './PersonLink';
 
@@ -6,6 +7,29 @@ type Props = {
 };
 
 export const PeopleTable = ({ people }: Props) => {
+  const { slug } = useParams();
+
+  if (!people || people.length === 0) {
+    return null;
+  }
+  
+  const peopleWithParents: Person[] = people.map(p => ({ ...p }));
+
+  const byName = new Map<string, Person>();
+  for (const p of peopleWithParents) {
+    byName.set(p.name, p);
+  }
+
+  for (const person of peopleWithParents) {
+    person.mother = person.motherName
+      ? byName.get(person.motherName)
+      : undefined;
+
+    person.father = person.fatherName
+      ? byName.get(person.fatherName)
+      : undefined;
+  }
+
   return (
     <table
       data-cy="peopleTable"
@@ -23,88 +47,13 @@ export const PeopleTable = ({ people }: Props) => {
       </thead>
 
       <tbody>
-        {people.length > 0 &&
-          people.map(person => <PersonLink person={person} />)}
-        ;
-        <tr data-cy="person">
-          <td>
-            <a href="#/people/philibert-haverbeke-1907">Philibert Haverbeke</a>
-          </td>
-
-          <td>m</td>
-          <td>1907</td>
-          <td>1997</td>
-
-          <td>
-            <a
-              className="has-text-danger"
-              href="#/people/emma-de-milliano-1876"
-            >
-              Emma de Milliano
-            </a>
-          </td>
-
-          <td>
-            <a href="#/people/emile-haverbeke-1877">Emile Haverbeke</a>
-          </td>
-        </tr>
-        <tr data-cy="person" className="has-background-warning">
-          <td>
-            <a href="#/people/jan-frans-van-brussel-1761">
-              Jan Frans van Brussel
-            </a>
-          </td>
-
-          <td>m</td>
-          <td>1761</td>
-          <td>1833</td>
-          <td>-</td>
-
-          <td>
-            <a href="#/people/jacobus-bernardus-van-brussel-1736">
-              Jacobus Bernardus van Brussel
-            </a>
-          </td>
-        </tr>
-        <tr data-cy="person">
-          <td>
-            <a className="has-text-danger" href="#/people/lievijne-jans-1542">
-              Lievijne Jans
-            </a>
-          </td>
-
-          <td>f</td>
-          <td>1542</td>
-          <td>1582</td>
-          <td>-</td>
-          <td>-</td>
-        </tr>
-        <tr data-cy="person">
-          <td>
-            <a href="#/people/bernardus-de-causmaecker-1721">
-              Bernardus de Causmaecker
-            </a>
-          </td>
-
-          <td>m</td>
-          <td>1721</td>
-          <td>1789</td>
-
-          <td>
-            <a
-              className="has-text-danger"
-              href="#/people/livina-haverbeke-1692"
-            >
-              Livina Haverbeke
-            </a>
-          </td>
-
-          <td>
-            <a href="#/people/lieven-de-causmaecker-1696">
-              Lieven de Causmaecker
-            </a>
-          </td>
-        </tr>
+        {peopleWithParents.map(person => (
+          <PersonLink
+            key={person.name}
+            person={person}
+            isSelected={person.slug === slug}
+          />
+        ))}
       </tbody>
     </table>
   );
